@@ -10,10 +10,6 @@ connectDB();
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-
 app.get('/api/ping', (req, res) => {
   res.json({ ok: true, message: 'Backend is alive' });
 });
