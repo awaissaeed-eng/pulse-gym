@@ -1,5 +1,5 @@
-const Member = require('../models/Member');
-const Payment = require('../models/Payment');
+const Member = require('../models/member');
+const Payment = require('../models/payment');
 
 const getStats = async (req, res) => {
   try {

@@ -1,5 +1,5 @@
-const Member = require('../models/Member');
-const Plan = require('../models/Plan');
+const Member = require('../models/member');
+const Plan = require('../models/plan');
 
 const calculateExpiryDate = (joinDate, duration) => {
   const date = new Date(joinDate);
