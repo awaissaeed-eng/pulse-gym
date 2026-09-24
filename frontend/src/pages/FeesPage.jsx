@@ -11,6 +11,7 @@ export default function FeesPage() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [formData, setFormData] = useState({
     member: '',
@@ -49,12 +50,39 @@ export default function FeesPage() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/payments', formData);
+      if (editingId) {
+        await api.put(`/payments/${editingId}`, formData);
+      } else {
+        await api.post('/payments', formData);
+      }
       setShowModal(false);
       setFormData({ member: '', amount: '', date: new Date().toISOString().split('T')[0], periodCovered: '', status: 'pending' });
+      setEditingId(null);
       fetchData();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save');
+    }
+  };
+
+  const handleEdit = (payment) => {
+    setFormData({
+      member: payment.member?._id || payment.member,
+      amount: payment.amount,
+      date: new Date(payment.date).toISOString().split('T')[0],
+      periodCovered: payment.periodCovered || '',
+      status: payment.status,
+    });
+    setEditingId(payment._id);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this payment?')) return;
+    try {
+      await api.delete(`/payments/${id}`);
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete');
     }
   };
 
@@ -137,11 +165,23 @@ export default function FeesPage() {
                   {payment.status === 'pending' && (
                     <button
                       onClick={() => handleMarkPaid(payment._id)}
-                      style={{ background: 'none', border: 'none', color: '#22c55e', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                      style={{ background: 'none', border: 'none', color: '#22c55e', cursor: 'pointer', fontSize: 12, fontWeight: 600, marginRight: 8 }}
                     >
                       Mark Paid
                     </button>
                   )}
+                  <button
+                    onClick={() => handleEdit(payment)}
+                    style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer', fontSize: 12, marginRight: 8 }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(payment._id)}
+                    style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer', fontSize: 12 }}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -150,7 +190,7 @@ export default function FeesPage() {
       </div>
 
       {/* Modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Add Payment">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingId(null); }} title={editingId ? 'Edit Payment' : 'Add Payment'}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Member</label>
@@ -195,7 +235,7 @@ export default function FeesPage() {
             placeholder="e.g., October 2026"
           />
           {error && <p className="text-xs" style={{ color: '#E5232D' }}>{error}</p>}
-          <Button variant="primary" type="submit">Add Payment</Button>
+          <Button variant="primary" type="submit">{editingId ? 'Save Payment' : 'Add Payment'}</Button>
         </form>
       </Modal>
     </div>

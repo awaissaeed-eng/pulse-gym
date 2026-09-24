@@ -17,6 +17,10 @@ connectDB();
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+	res.json({ status: 'ok' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/members', memberRoutes);

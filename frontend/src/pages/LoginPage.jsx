@@ -4,24 +4,35 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
+  const [isSignup, setIsSignup] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('admin@pulsegym.com');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email || !password) {
+    if (!email || !password || (isSignup && (!name || !confirmPassword))) {
       setError('Please fill in all fields.');
+      return;
+    }
+    if (isSignup && password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
     setLoading(true);
     try {
-      await login(email, password);
+      if (isSignup) {
+        await signup(name, email, password);
+      } else {
+        await login(email, password);
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || (isSignup ? 'Signup failed' : 'Login failed'));
     } finally {
       setLoading(false);
     }
@@ -55,10 +66,23 @@ export default function LoginPage() {
 
         {/* Card */}
         <div style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: 12, padding: '40px' }} className="card-shadow">
-          <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-white mb-1">Sign In</h1>
-          <p className="text-sm mb-8" style={{ color: '#666' }}>Access your admin dashboard</p>
+          <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-white mb-1">
+            {isSignup ? 'Create Account' : 'Sign In'}
+          </h1>
+          <p className="text-sm mb-8" style={{ color: '#666' }}>
+            {isSignup ? 'Set up your gym management account' : 'Access your admin dashboard'}
+          </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {isSignup && (
+              <Input
+                label="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+              />
+            )}
+
             <Input
               label="Email Address"
               type="email"
@@ -75,12 +99,36 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
 
+            {isSignup && (
+              <Input
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            )}
+
             {error && <p className="text-xs" style={{ color: '#E5232D' }}>{error}</p>}
 
             <Button variant="primary" size="md" loading={loading}>
-              {loading ? 'Authenticating…' : 'Log In'}
+              {loading ? (isSignup ? 'Creating Account…' : 'Authenticating…') : (isSignup ? 'Create Account' : 'Log In')}
             </Button>
           </form>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsSignup(!isSignup);
+              setError('');
+              setName('');
+              setConfirmPassword('');
+            }}
+            className="w-full mt-6 text-sm"
+            style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer' }}
+          >
+            {isSignup ? 'Already have an account? Sign in' : 'Need an account? Create one'}
+          </button>
 
           <div className="mt-6 pt-6" style={{ borderTop: '1px solid #222' }}>
             <p className="text-xs text-center" style={{ color: '#444' }}>

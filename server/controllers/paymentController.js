@@ -42,6 +42,37 @@ const createPayment = async (req, res) => {
   }
 };
 
+const updatePayment = async (req, res) => {
+  try {
+    const { member, amount, date, periodCovered, status } = req.body;
+
+    if (!member || amount === undefined || !date) {
+      return res.status(400).json({ error: 'Member, amount, and date are required' });
+    }
+
+    const memberDoc = await Member.findById(member);
+    if (!memberDoc) return res.status(404).json({ error: 'Member not found' });
+
+    const payment = await Payment.findByIdAndUpdate(
+      req.params.id,
+      {
+        member,
+        memberNameSnapshot: memberDoc.name,
+        amount,
+        date,
+        periodCovered,
+        status: status || 'pending',
+      },
+      { new: true, runValidators: true }
+    ).populate('member', 'name phone');
+
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+    res.json(payment);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update payment', details: err.message });
+  }
+};
+
 const markAsPaid = async (req, res) => {
   try {
     const payment = await Payment.findByIdAndUpdate(
@@ -57,4 +88,14 @@ const markAsPaid = async (req, res) => {
   }
 };
 
-module.exports = { getPayments, createPayment, markAsPaid };
+const deletePayment = async (req, res) => {
+  try {
+    const payment = await Payment.findByIdAndDelete(req.params.id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+    res.json({ message: 'Payment deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete payment', details: err.message });
+  }
+};
+
+module.exports = { getPayments, createPayment, updatePayment, markAsPaid, deletePayment };
