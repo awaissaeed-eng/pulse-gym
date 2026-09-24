@@ -197,8 +197,10 @@ export default function MembersPage() {
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Plan</label>
+            <label htmlFor="member-plan" className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Plan</label>
             <select
+              id="member-plan"
+              name="plan"
               value={formData.plan}
               onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
               style={{

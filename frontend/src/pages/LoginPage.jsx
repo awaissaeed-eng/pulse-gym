@@ -39,7 +39,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: '#0D0D0D' }}>
+    <div className="auth-page min-h-screen flex items-center justify-center relative" style={{ background: '#0D0D0D' }}>
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none" style={{
         backgroundImage: `radial-gradient(ellipse 80% 50% at 50% -10%, rgba(229,35,45,0.07) 0%, transparent 70%)`,
@@ -50,22 +50,22 @@ export default function LoginPage() {
         backgroundSize: '48px 48px',
       }} />
 
-      <div className="relative z-10 w-full max-w-md px-6 fade-in">
+      <div className="auth-shell relative z-10 w-full fade-in">
         {/* Logo */}
-        <div className="text-center mb-10">
+        <div className="auth-brand text-center">
           <div className="inline-flex items-center gap-3 mb-2">
-            <div style={{ width: 36, height: 36, background: '#E5232D', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="auth-logo" style={{ background: '#E5232D', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
-            <span className="font-heading text-xl font-bold tracking-widest text-white uppercase">Pulse Gym</span>
+            <span className="auth-title font-heading font-bold tracking-widest text-white uppercase">Pulse Gym</span>
           </div>
           <p className="text-sm tracking-widest uppercase" style={{ color: '#555' }}>Management Console</p>
         </div>
 
         {/* Card */}
-        <div style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: 12, padding: '40px' }} className="card-shadow">
+        <div className="auth-card card-shadow" style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: 12 }}>
           <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-white mb-1">
             {isSignup ? 'Create Account' : 'Sign In'}
           </h1>
@@ -73,7 +73,7 @@ export default function LoginPage() {
             {isSignup ? 'Set up your gym management account' : 'Access your admin dashboard'}
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="auth-form flex flex-col">
             {isSignup && (
               <Input
                 label="Full Name"

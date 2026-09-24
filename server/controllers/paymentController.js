@@ -4,6 +4,55 @@ const Member = require('../models/Member');
 const getPayments = async (req, res) => {
   try {
     const { status } = req.query;
+
+    if (status === 'pending') {
+      const now = new Date();
+      const members = await Member.find().populate('plan', 'name price duration');
+      const allPayments = await Payment.find().sort({ date: -1, createdAt: -1 });
+      const latestPaymentByMember = new Map();
+
+      allPayments.forEach((payment) => {
+        const memberId = payment.member.toString();
+        if (!latestPaymentByMember.has(memberId)) {
+          latestPaymentByMember.set(memberId, payment);
+        }
+      });
+
+      const unpaidMembers = members.filter((member) => {
+        const isActive = member.statusOverride === 'active'
+          || (!member.statusOverride && member.expiryDate > now);
+        const latestPayment = latestPaymentByMember.get(member._id.toString());
+        return isActive && (!latestPayment || latestPayment.status !== 'paid');
+      });
+
+      const storedPendingIds = unpaidMembers
+        .map((member) => latestPaymentByMember.get(member._id.toString()))
+        .filter((payment) => payment?.status === 'pending')
+        .map((payment) => payment._id);
+
+      const storedPendingPayments = await Payment.find({ _id: { $in: storedPendingIds } })
+        .populate('member', 'name phone')
+        .sort({ date: -1, createdAt: -1 });
+      const storedPendingMemberIds = new Set(
+        storedPendingPayments.map((payment) => payment.member._id.toString())
+      );
+
+      const dueRows = unpaidMembers
+        .filter((member) => !storedPendingMemberIds.has(member._id.toString()))
+        .map((member) => ({
+          _id: `due-${member._id}`,
+          member: { _id: member._id, name: member.name, phone: member.phone },
+          memberNameSnapshot: member.name,
+          amount: member.plan?.price || 0,
+          date: member.expiryDate,
+          periodCovered: member.plan?.duration || '',
+          status: 'pending',
+          isOutstanding: true,
+        }));
+
+      return res.json([...storedPendingPayments, ...dueRows]);
+    }
+
     const query = status ? { status } : {};
 
     const payments = await Payment.find(query)

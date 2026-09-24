@@ -1,13 +1,17 @@
 export default function Input({ label, error, ...props }) {
+  const fieldId = props.id || (label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-') : undefined);
+
   return (
     <div>
       {label && (
-        <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>
+        <label htmlFor={fieldId} className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>
           {label}
         </label>
       )}
       <input
         {...props}
+        id={fieldId}
+        name={props.name || fieldId}
         style={{
           width: '100%',
           background: '#111',

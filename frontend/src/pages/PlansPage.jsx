@@ -106,7 +106,7 @@ export default function PlansPage() {
             className="card-shadow"
           >
             <h3 className="font-heading text-lg font-bold text-white mb-2">{plan.name}</h3>
-            <p className="text-4xl font-bold text-white mb-2">${plan.price.toLocaleString()}</p>
+            <p className="text-4xl font-bold text-white mb-2">PKR {plan.price.toLocaleString('en-PK')}</p>
             <p className="text-xs mb-6" style={{ color: '#666' }}>per {plan.duration}</p>
             {plan.description && (
               <p className="text-sm mb-6" style={{ color: '#888' }}>{plan.description}</p>
@@ -142,8 +142,10 @@ export default function PlansPage() {
             required
           />
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Duration</label>
+            <label htmlFor="plan-duration" className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Duration</label>
             <select
+              id="plan-duration"
+              name="duration"
               value={formData.duration}
               onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
               style={{

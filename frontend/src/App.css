@@ -338,6 +338,37 @@ button:focus-visible {
   animation: fade-in 0.35s ease both;
 }
 
+.auth-page {
+  min-height: 100svh;
+  padding: 32px 16px;
+  overflow-y: auto;
+}
+
+.auth-shell {
+  max-width: 448px;
+}
+
+.auth-brand {
+  margin-bottom: 28px;
+}
+
+.auth-logo {
+  width: 32px;
+  height: 32px;
+}
+
+.auth-title {
+  font-size: 18px;
+}
+
+.auth-card {
+  padding: 28px;
+}
+
+.auth-form {
+  gap: 16px;
+}
+
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -358,6 +389,19 @@ button:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .auth-page {
+    align-items: flex-start;
+    padding: 24px 16px;
+  }
+
+  .auth-brand {
+    margin-bottom: 20px;
+  }
+
+  .auth-card {
+    padding: 24px !important;
+  }
+
   .page-pad {
     padding: 24px 16px 32px !important;
   }
@@ -430,15 +474,6 @@ button:focus-visible {
 
   .modal-inner {
     width: 100% !important;
-    padding: 24px !important;
-  }
-
-  .max-w-md {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .max-w-md > .card-shadow {
     padding: 24px !important;
   }
 

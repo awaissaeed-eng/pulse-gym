@@ -97,7 +97,7 @@ export default function FeesPage() {
 
   if (loading) return <LoadingSpinner />;
 
-  const fmt = (n) => `$${n.toLocaleString()}`;
+  const fmt = (n) => `PKR ${n.toLocaleString('en-PK')}`;
 
   return (
     <div className="page-pad" style={{ padding: '32px 24px', maxWidth: 1200 }}>
@@ -162,7 +162,7 @@ export default function FeesPage() {
                   </Badge>
                 </td>
                 <td data-label="Action" className="td-actions" style={{ padding: '16px', textAlign: 'right' }}>
-                  {payment.status === 'pending' && (
+                  {payment.status === 'pending' && !payment.isOutstanding && (
                     <button
                       onClick={() => handleMarkPaid(payment._id)}
                       style={{ background: 'none', border: 'none', color: '#22c55e', cursor: 'pointer', fontSize: 12, fontWeight: 600, marginRight: 8 }}
@@ -170,18 +170,25 @@ export default function FeesPage() {
                       Mark Paid
                     </button>
                   )}
-                  <button
-                    onClick={() => handleEdit(payment)}
-                    style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer', fontSize: 12, marginRight: 8 }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(payment._id)}
-                    style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer', fontSize: 12 }}
-                  >
-                    Delete
-                  </button>
+                  {!payment.isOutstanding && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(payment)}
+                        style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer', fontSize: 12, marginRight: 8 }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(payment._id)}
+                        style={{ background: 'none', border: 'none', color: '#E5232D', cursor: 'pointer', fontSize: 12 }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {payment.isOutstanding && (
+                    <span style={{ color: '#666', fontSize: 12 }}>No payment recorded</span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -193,8 +200,10 @@ export default function FeesPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingId(null); }} title={editingId ? 'Edit Payment' : 'Add Payment'}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Member</label>
+            <label htmlFor="payment-member" className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#888' }}>Member</label>
             <select
+              id="payment-member"
+              name="member"
               value={formData.member}
               onChange={(e) => setFormData({ ...formData, member: e.target.value })}
               style={{

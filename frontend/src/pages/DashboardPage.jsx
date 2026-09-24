@@ -26,13 +26,19 @@ export default function DashboardPage({ onNavigate }) {
   if (error) return <div style={{ padding: '32px', color: '#E5232D' }}>{error}</div>;
   if (!stats) return null;
 
-  const fmt = (n) => `$${n.toLocaleString()}`;
+  const fmt = (n) => `PKR ${n.toLocaleString('en-PK')}`;
+  const activePercentage = stats.totalMembers === 0
+    ? 0
+    : Math.round((stats.activeMembers / stats.totalMembers) * 100);
+  const revenueChangeLabel = stats.revenueChange >= 0
+    ? `+${stats.revenueChange}% vs last month`
+    : `${stats.revenueChange}% vs last month`;
 
   const statCards = [
-    { label: 'Total Members', value: stats.totalMembers, icon: '👥', delta: '+3 this week' },
-    { label: 'Active Members', value: stats.activeMembers, icon: '✓', delta: `${Math.round(stats.activeMembers / stats.totalMembers * 100)}% active` },
-    { label: 'Pending Fees', value: fmt(stats.pendingFees), icon: '$', delta: '3 overdue', deltaRed: true },
-    { label: 'Total Revenue', value: fmt(stats.monthlyRevenue), icon: '📈', delta: '+12% vs last month' },
+    { label: 'Total Members', value: stats.totalMembers, icon: '👥', delta: `+${stats.newMembersThisWeek} this week` },
+    { label: 'Active Members', value: stats.activeMembers, icon: '✓', delta: `${activePercentage}% active` },
+    { label: 'Pending Fees', value: fmt(stats.pendingFees), icon: '₨', delta: `${stats.unpaidMembers} unpaid members`, deltaRed: stats.unpaidMembers > 0 },
+    { label: 'Total Revenue', value: fmt(stats.monthlyRevenue), icon: '📈', delta: revenueChangeLabel, deltaRed: stats.revenueChange < 0 },
   ];
 
   return (
@@ -40,7 +46,7 @@ export default function DashboardPage({ onNavigate }) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-white mb-1">Overview</h1>
-        <p className="text-sm" style={{ color: '#666' }}>September 2026 · Pulse Gym HQ</p>
+        <p className="text-sm" style={{ color: '#666' }}>{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} · Pulse Gym HQ</p>
       </div>
 
       {/* Stat Cards */}
