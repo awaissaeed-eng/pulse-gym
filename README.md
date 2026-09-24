@@ -1,5 +1,21 @@
 # Pulse Gym
 
+> A focused MERN administration console for running the day-to-day operations of a gym.
+
+[![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB?logo=react&logoColor=111111)](frontend/)
+[![Backend](https://img.shields.io/badge/backend-Node%20%2B%20Express-339933?logo=node.js&logoColor=white)](server/)
+[![Database](https://img.shields.io/badge/database-MongoDB%20Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+
+## Live Links
+
+| Resource | URL |
+| --- | --- |
+| Backend API | [pulse-gym.onrender.com](https://pulse-gym.onrender.com) |
+| API health check | [/health](https://pulse-gym.onrender.com/health) |
+| Frontend | [pulse-gym-sigma.vercel.app](https://pulse-gym-sigma.vercel.app) |
+
+The frontend calls the backend through `VITE_API_URL`. The backend accepts browser requests from the deployed frontend through `CLIENT_URL`.
+
 Pulse Gym is a full-stack gym management application for administrators. It centralizes member records, membership plans, payments, and dashboard reporting in one authenticated web application.
 
 ## Project Planning
@@ -11,6 +27,18 @@ Small gyms often manage members, plans, and fee payments using disconnected spre
 ### Solution
 
 Pulse Gym provides a persistent web-based management console where authorized staff can create and maintain gym data, review payment activity, and monitor important membership statistics from a dashboard.
+
+### Intended User
+
+The primary user is a gym administrator or staff member who needs a quick, reliable view of memberships and fee collection without maintaining separate spreadsheets.
+
+### Success Criteria
+
+- A new administrator can create an account and sign in securely.
+- A staff member can maintain members and plans through the interface.
+- A staff member can record, edit, filter, complete, and delete payments.
+- The dashboard reflects persisted MongoDB data rather than placeholder values.
+- The application can run locally and be deployed as a separate Vercel frontend and Render API.
 
 ### Main Features
 
@@ -26,6 +54,19 @@ Pulse Gym provides a persistent web-based management console where authorized st
 - Dashboard statistics for members, active members, revenue, and pending fees
 - Responsive desktop and mobile interface
 - MongoDB persistence through Mongoose
+
+### Rubric Coverage
+
+| Assignment requirement | Implementation |
+| --- | --- |
+| React frontend | `frontend/src/` with dashboard, members, plans, fees, and authentication screens |
+| Persistent database | MongoDB Atlas through Mongoose models |
+| CRUD operations | Full CRUD for members, plans, and payments |
+| User registration/login | Signup and login forms with API integration |
+| Secure passwords | bcrypt password hashing |
+| JWT authentication | JWT issue, storage, Bearer headers, and protected API middleware |
+| Deployment | Vercel frontend, Render backend, MongoDB Atlas database |
+| Documentation | This README, environment examples, API tables, and verification commands |
 
 ## Technologies Used
 
@@ -48,6 +89,29 @@ Pulse Gym provides a persistent web-based management console where authorized st
 - CORS
 - dotenv
 
+## How It Works
+
+### Administrator workflow
+
+1. The administrator creates an account or signs in.
+2. The frontend stores the JWT session and attaches it to protected API requests.
+3. Plans are created before members are registered so each member can reference a plan.
+4. A member receives a calculated expiry date based on the plan duration.
+5. Payments are recorded against members and can be marked paid, edited, or deleted.
+6. Dashboard totals are calculated from members, plans, and payment records in MongoDB.
+
+### Data flow
+
+```text
+React UI
+	-> Axios API client
+	-> Express routes
+	-> JWT middleware
+	-> Controllers
+	-> Mongoose models
+	-> MongoDB Atlas
+```
+
 ## Application Structure
 
 ```text
@@ -57,8 +121,9 @@ pulse-gym/
 │   │   ├── components/       Reusable UI components
 │   │   ├── context/          Authentication state
 │   │   ├── libraries/        Axios API client
-│   │   └── pages/            Dashboard and management screens
-│   │   └── App.jsx
+│   │   ├── pages/            Dashboard and management screens
+│   │   ├── App.jsx            Application shell
+│   │   └── main.jsx           React entry point
 │   └── package.json
 ├── server/
 │   ├── config/               Database connection
@@ -69,6 +134,21 @@ pulse-gym/
 │   └── server.js
 └── README.md
 ```
+
+## Database Relationships
+
+```text
+User
+	(authentication account)
+
+Plan 1 <---- many Member
+Member 1 <---- many Payment
+```
+
+- A member references one membership plan through `Member.plan`.
+- A payment references one member through `Payment.member`.
+- `memberNameSnapshot` preserves the member name shown on a payment record.
+- Active/expired member status is calculated from `expiryDate` unless an administrator sets `statusOverride`.
 
 ## Database Design
 
@@ -175,6 +255,38 @@ Returns a simple success response for deployment monitoring:
 {"status":"ok"}
 ```
 
+### Example Requests
+
+Create an account:
+
+```http
+POST /api/auth/signup
+Content-Type: application/json
+
+{
+	"name": "Gym Admin",
+	"email": "admin@example.com",
+	"password": "change-this-password"
+}
+```
+
+Create a plan with a JWT:
+
+```http
+POST /api/plans
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+	"name": "Monthly Standard",
+	"price": 3000,
+	"duration": "monthly",
+	"description": "Full gym access"
+}
+```
+
+Protected requests without a valid token return `401 Unauthorized`.
+
 ## Local Setup
 
 ### Prerequisites
@@ -237,6 +349,17 @@ npm run dev
 
 The frontend is available at the local Vite URL shown in the terminal, normally `http://localhost:5173`.
 
+### Environment Variables: Which URL Goes Where?
+
+The two URLs have different responsibilities:
+
+| Variable | File | Value | Purpose |
+| --- | --- | --- | --- |
+| `VITE_API_URL` | `frontend/.env` | `http://localhost:5000/api` locally | Tells React where the backend API is located |
+| `CLIENT_URL` | `server/.env` | `http://localhost:5173` locally | Tells Express which frontend origin CORS should allow |
+
+For production, `VITE_API_URL` is the Render API URL and `CLIENT_URL` is the Vercel frontend URL. Never swap these values.
+
 ## Authentication Flow
 
 1. A user submits the signup form.
@@ -282,7 +405,7 @@ Set these Render environment variables:
 ```env
 MONGO_URI=your-mongodb-atlas-connection-string
 JWT_SECRET=your-production-secret
-CLIENT_URL=https://your-frontend.vercel.app
+CLIENT_URL=https://pulse-gym-sigma.vercel.app
 PORT=10000
 ```
 
@@ -307,6 +430,17 @@ https://pulse-gym.onrender.com/health
 ```
 
 Then test signup, login, member CRUD, plan CRUD, payment CRUD, and logout through the live frontend.
+
+### Production Smoke Test
+
+- [ ] Open the Vercel frontend without a console error.
+- [ ] Create a new account through signup.
+- [ ] Sign in and confirm the dashboard loads.
+- [ ] Create a membership plan.
+- [ ] Create, edit, filter, and delete a member.
+- [ ] Create, edit, mark paid, filter, and delete a payment.
+- [ ] Confirm dashboard totals change after payment updates.
+- [ ] Sign out and confirm protected content is no longer accessible.
 
 ## Verification Commands
 
@@ -334,3 +468,13 @@ node --check controllers/paymentController.js
 - Rotate credentials if they are accidentally exposed.
 - Restrict MongoDB Atlas network access where possible.
 - Passwords are stored only as bcrypt hashes.
+
+## Submission Checklist
+
+- [ ] Push the latest source to the GitHub repository.
+- [ ] Add the GitHub URL to the assignment submission form.
+- [ ] Add the live Vercel frontend URL to the submission form and this README.
+- [ ] Add the live Render API URL to the submission form.
+- [ ] Confirm MongoDB Atlas network access allows the deployed backend.
+- [ ] Confirm `.env` files are not committed.
+- [ ] Rotate any database password or JWT secret that has been exposed.
