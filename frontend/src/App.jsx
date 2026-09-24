@@ -1,18 +1,53 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from 'react';
+import { useAuth } from './context/useAuth';
+import ProtectedRoute from './components/ProtectedRoute';
+import AppLayout from './components/AppLayout';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import MembersPage from './pages/MembersPage';
+import PlansPage from './pages/PlansPage';
+import FeesPage from './pages/FeesPage';
 
-function App() {
-  const [status, setStatus] =useState('checking...');
+export default function App() {
+  const { isLoggedIn, logout, isLoading } = useAuth();
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen" style={{ background: '#111111' }}>
+        <p style={{ color: '#888' }}>Loading...</p>
+      </div>
+    );
+  }
 
-    axios.get(`${apiUrl}/ping`)
-      .then(res => setStatus(res.data.message))
-      .catch(() => setStatus('backend not reachable'));
-  }, []);
+  if (!isLoggedIn) {
+    return <LoginPage />;
+  }
 
-  return <div style = {{ padding: '2rem' }}>{status} </div>
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <DashboardPage onNavigate={setCurrentPage} />;
+      case 'members':
+        return <MembersPage />;
+      case 'plans':
+        return <PlansPage />;
+      case 'fees':
+        return <FeesPage />;
+      default:
+        return <DashboardPage onNavigate={setCurrentPage} />;
+    }
+  };
+
+  return (
+    <ProtectedRoute>
+      <AppLayout
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        onLogout={logout}
+      >
+        {renderPage()}
+      </AppLayout>
+    </ProtectedRoute>
+  );
 }
-
-export default App;
